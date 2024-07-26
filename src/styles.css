@@ -1,0 +1,100 @@
+import React, { useState, useEffect } from 'react';
+import { Utensils, DollarSign, Users } from 'lucide-react';
+
+const CulinaryEmpire = () => {
+  const [money, setMoney] = useState(100);
+  const [customers, setCustomers] = useState(0);
+  const [equipmentLevel, setEquipmentLevel] = useState(1);
+  const [menuItems, setMenuItems] = useState([
+    { name: 'Burger', price: 5, productionTime: 5000 },
+    { name: 'Pizza', price: 8, productionTime: 8000 },
+  ]);
+  const [producing, setProducing] = useState(false);
+
+  useEffect(() => {
+    const customerInterval = setInterval(() => {
+      if (customers < 5) {
+        setCustomers(prev => prev + 1);
+      }
+    }, 10000);
+
+    return () => clearInterval(customerInterval);
+  }, [customers]);
+
+  const handleServeCustomer = (menuItem) => {
+    if (customers > 0 && !producing) {
+      setProducing(true);
+      setTimeout(() => {
+        setMoney(prev => prev + menuItem.price);
+        setCustomers(prev => prev - 1);
+        setProducing(false);
+      }, menuItem.productionTime / equipmentLevel);
+    }
+  };
+
+  const handleUpgradeEquipment = () => {
+    const upgradeCost = equipmentLevel * 50;
+    if (money >= upgradeCost) {
+      setMoney(prev => prev - upgradeCost);
+      setEquipmentLevel(prev => prev + 1);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto bg-gradient-to-br from-yellow-100 to-orange-100 rounded-xl shadow-lg space-y-6">
+      <h1 className="text-3xl font-extrabold text-center text-orange-800">Culinary Empire</h1>
+      
+      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow">
+        <div className="flex items-center space-x-2">
+          <DollarSign className="text-green-600" />
+          <span className="font-bold text-xl">{money}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Users className="text-blue-600" />
+          <span className="font-bold text-xl">{customers}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Utensils className="text-orange-600" />
+          <span className="font-bold text-xl">{equipmentLevel}</span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {menuItems.map((item, index) => (
+          <button
+            key={index}
+            onClick={() => handleServeCustomer(item)}
+            disabled={customers === 0 || producing}
+            className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow hover:from-blue-600 hover:to-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Serve {item.name} (${item.price})
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={handleUpgradeEquipment}
+        disabled={money < equipmentLevel * 50}
+        className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow hover:from-green-600 hover:to-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Upgrade Equipment (${equipmentLevel * 50})
+      </button>
+
+      {producing && (
+        <div className="text-center text-orange-600 font-semibold animate-pulse">
+          Cooking in progress...
+        </div>
+      )}
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <div className="App min-h-screen bg-orange-50 flex items-center justify-center">
+      <CulinaryEmpire />
+    </div>
+  );
+}
+
+export default App;
